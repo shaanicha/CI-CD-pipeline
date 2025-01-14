@@ -1,28 +1,34 @@
 pipeline {
     agent any
     environment {
-        // Docker Hub image repository
         DOCKER_IMAGE = 'shaani/ci-cd-pipeline-image'
-        // Staging container name
         STAGING_ENV = 'staging-container'
     }
     stages {
         stage('Checkout Code') {
             steps {
                 echo 'Checking out code from GitHub...'
-                git branch: 'main', url: 'https://github.com/shaanicha/CI-CD-pipeline.git'
+                git credentialsId: 'github-credentials', branch: 'main', url: 'https://github.com/shaanicha/CI-CD-pipeline.git'
             }
         }
         stage('Install Dependencies') {
             steps {
                 echo 'Installing Python dependencies...'
-                sh 'pip install -r requirements.txt'
+                script {
+                    // Create a virtual environment
+                    sh 'python3 -m venv venv'
+                    // Activate the virtual environment and install dependencies
+                    sh '. venv/bin/activate && pip install -r requirements.txt'
+                }
             }
         }
         stage('Run Unit Tests') {
             steps {
                 echo 'Running unit tests...'
-                sh 'pytest tests/'
+                script {
+                    // Activate virtual environment and run tests
+                    sh '. venv/bin/activate && pytest tests/'
+                }
             }
         }
         stage('Build Docker Image') {
@@ -62,4 +68,3 @@ pipeline {
         }
     }
 }
-
