@@ -52,27 +52,17 @@ pipeline {
                 """
             }
         }
-        stage('Intentional Failure') {
-            steps {
-                echo 'Introducing a failure for testing notifications...'
-                script {
-                    error("This is an intentional failure for testing!")
-                }
-            }
-        }
     }
     post {
         always {
-            echo 'Pipeline execution completed.'
-        }
-        failure {
-            echo 'Pipeline failed. Sending email notification...'
+            echo 'Pipeline execution completed. Sending email notification...'
             emailext(
-                subject: "Jenkins Pipeline Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                subject: "Jenkins Pipeline Status: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
-                    <p>The pipeline has failed during execution.</p>
+                    <p>The Jenkins pipeline has completed execution.</p>
                     <p>Details:</p>
                     <ul>
+                        <li><b>Status:</b> ${currentBuild.currentResult}</li>
                         <li><b>Job:</b> ${env.JOB_NAME}</li>
                         <li><b>Build Number:</b> ${env.BUILD_NUMBER}</li>
                         <li><b>URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></li>
