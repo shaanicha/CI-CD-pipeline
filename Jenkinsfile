@@ -52,6 +52,14 @@ pipeline {
                 """
             }
         }
+        stage('Intentional Failure') {
+            steps {
+                echo 'Introducing a failure for testing notifications...'
+                script {
+                    error("This is an intentional failure for testing!")
+                }
+            }
+        }
     }
     post {
         always {
@@ -62,14 +70,13 @@ pipeline {
             emailext(
                 subject: "Jenkins Pipeline Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """
-                    <p>The Jenkins pipeline has failed during execution.</p>
+                    <p>The pipeline has failed during execution.</p>
                     <p>Details:</p>
                     <ul>
-                        <li><b>Job Name:</b> ${env.JOB_NAME}</li>
+                        <li><b>Job:</b> ${env.JOB_NAME}</li>
                         <li><b>Build Number:</b> ${env.BUILD_NUMBER}</li>
                         <li><b>URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></li>
                     </ul>
-                    <p>Please review the logs and address the issue.</p>
                 """,
                 recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                 to: 'shraddhachaudhari1730@gmail.com',
