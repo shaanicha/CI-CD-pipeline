@@ -15,9 +15,7 @@ pipeline {
             steps {
                 echo 'Installing Python dependencies...'
                 script {
-                    // Create a virtual environment
                     sh 'python3 -m venv venv'
-                    // Activate the virtual environment and install dependencies
                     sh '. venv/bin/activate && pip install -r requirements.txt'
                 }
             }
@@ -26,7 +24,6 @@ pipeline {
             steps {
                 echo 'Running unit tests...'
                 script {
-                    // Activate virtual environment and run tests
                     sh '. venv/bin/activate && pytest tests/'
                 }
             }
@@ -60,11 +57,24 @@ pipeline {
         always {
             echo 'Pipeline execution completed.'
         }
-        success {
-            echo 'Pipeline executed successfully.'
-        }
         failure {
-            echo 'Pipeline failed. Check the logs for details.'
+            echo 'Pipeline failed. Sending email notification...'
+            emailext(
+                subject: "Jenkins Pipeline Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+                    <p>The Jenkins pipeline has failed during execution.</p>
+                    <p>Details:</p>
+                    <ul>
+                        <li><b>Job Name:</b> ${env.JOB_NAME}</li>
+                        <li><b>Build Number:</b> ${env.BUILD_NUMBER}</li>
+                        <li><b>URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></li>
+                    </ul>
+                    <p>Please review the logs and address the issue.</p>
+                """,
+                recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                to: 'shraddhachaudhari1730@gmail.com',
+                mimeType: 'text/html'
+            )
         }
     }
 }
